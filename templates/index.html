@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EchoTags</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 EchoTags</h1>
+
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+            <textarea name="input_text" placeholder="Enter your post or caption here...">{{ input_text }}</textarea>
+
+            <label class="custom-upload-btn">
+                <input type="file" name="pdf_file" accept="application/pdf" onchange="handleFileSelect(this)">
+                📄 Upload PDF
+            </label>
+
+            <span id="pdf-status">
+                {% if pdf_filename %}
+                    {{ pdf_filename }} uploaded successfully ✅
+                {% else %}
+                    No PDF uploaded
+                {% endif %}
+            </span>
+
+            <button type="submit">Generate Hashtags</button>
+        </form>
+
+        {% if hashtags %}
+        <div class="results">
+            <h2>🏷️ Generated Hashtags</h2>
+            <button class="copy-all-btn" onclick="copyAllHashtags()">📋 Copy All</button>
+            <div class="hashtags">
+                {% for tag in hashtags %}
+                    <span class="hashtag" onclick="copyToClipboard('{{ tag }}')">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if highlighted_text %}
+        <div class="highlighted">
+            <h3>🔍 Highlighted Keywords</h3>
+            <div class="highlight-box scrollable">{{ highlighted_text|safe }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="toast" class="toast">Copied to clipboard</div>
+
+    <script>
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => showToast(`📋 Copied: ${text}`))
+                .catch(() => showToast("❌ Failed to copy"));
+        }
+        function copyAllHashtags() {
+            const tags = [...document.querySelectorAll('.hashtag')].map(el => el.innerText).join(' ');
+            navigator.clipboard.writeText(tags)
+                .then(() => showToast("✅ All hashtags copied!"))
+                .catch(() => showToast("❌ Failed to copy hashtags."));
+        }
+        function handleFileSelect(input) {
+            const fileStatus = document.getElementById('pdf-status');
+            if (input.files.length > 0) {
+                const filename = input.files[0].name;
+                fileStatus.textContent = `${filename} selected ✅`;
+                fileStatus.classList.remove('error');
+                showToast(`${filename} selected`);
+                setTimeout(() => document.getElementById('upload-form').submit(), 500);
+            } else {
+                fileStatus.textContent = 'No PDF uploaded';
+                fileStatus.classList.add('error');
+            }
+        }
+    </script>
+</body>
+</html>

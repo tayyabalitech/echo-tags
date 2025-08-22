@@ -1,0 +1,6 @@
+flask
+markupsafe
+pdfplumber
+spacy
+nltk
+scikit-learn
